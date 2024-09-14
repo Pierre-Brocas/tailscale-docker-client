@@ -1,11 +1,14 @@
 services:
-  tailscale:
-    image: tailscale-container
-    container_name: tailscale-container
+  tailscale-docker-client:
+    image: tailscale-docker-client
+    container_name: tailscale-docker-client
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun
     environment:
-      - TAILSCALE_KEY=<your_auth_key>
-      - TAILSCALE_SERVER_URL=<your_tailscale_server_url>
+      TAILSCALE_KEY: <AUTH_KEY>
+      TAILSCALE_SERVER_URL: <SERVER_URL}
+      TAILSCALE_HOSTNAME: <HOSTNAME}     
+    volumes:
+      - ./tailscale-client/:/tailscale/

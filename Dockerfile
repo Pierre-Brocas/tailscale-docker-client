@@ -7,7 +7,18 @@ RUN apk update && apk add --no-cache \
     iptables \
     ip6tables \
     tailscale \
-    ca-certificates
+    ca-certificates \
+    && mkdir -p /tailscale/state
 
-# Start the tailscaled daemon and run tailscale up in a command
-CMD ["/bin/sh", "-c", "/usr/sbin/tailscaled & sleep 5 && tailscale up --auth-key=\"$TAILSCALE_KEY\" --hostname=\"tailscale-container\" --login-server=\"$TAILSCALE_SERVER_URL\" && tail -f /dev/null"]
+# Set environment variables for Tailscale
+ENV TAILSCALE_KEY=
+ENV TAILSCALE_SERVER_URL=
+ENV TAILSCALE_HOSTNAME=tailscale-container
+
+# Run Tailscale with proper signal handling in JSON format
+CMD ["/bin/sh", "-c", " \
+    /usr/sbin/tailscaled --state=/tailscale/state & \
+    TAILSCALED_PID=$! && \
+    tailscale up --auth-key=\"$TAILSCALE_KEY\" --hostname=\"$TAILSCALE_HOSTNAME\" --login-server=\"$TAILSCALE_SERVER_URL\" && \
+    trap 'tailscale down; kill $TAILSCALED_PID' SIGTERM SIGINT && \
+    wait $TAILSCALED_PID"]

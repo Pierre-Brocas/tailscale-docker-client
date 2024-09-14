@@ -12,37 +12,42 @@ docker build -t tailscale-docker-client .
 # Run with docker
 
 To run the Docker container directly, use the following command:
-```
+```bash
 docker run -d \
-  --name tailscale-container \
-  --cap-add=NET_ADMIN \
-  --device=/dev/net/tun \
-  -e TAILSCALE_KEY=<your_auth_key> \
-  -e TAILSCALE_SERVER_URL=<your_tailscale_server_url> \
-  tailscale-container
+  --name tailscale-docker-client \
+  --cap-add NET_ADMIN \
+  --device /dev/net/tun \
+  -e TAILSCALE_KEY=<AUTH_KEY> \
+  -e TAILSCALE_SERVER_URL=<SERVER_URL> \
+  -e TAILSCALE_HOSTNAME=<HOSTNAME> \
+  -v $(pwd)/tailscale-client/:/tailscale/ \
+  tailscale-docker-client
 ```
 # Run with docker compose
 
 create a docker-compose.yml 
-```
+```yml
 services:
-  tailscale:
-    image: tailscale-container
-    container_name: tailscale-container
+  tailscale-docker-client:
+    image: tailscale-docker-client
+    container_name: tailscale-docker-client
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun
     environment:
-      - TAILSCALE_KEY=<y
-      our_auth_key>
-      - TAILSCALE_SERVER_URL=<your_tailscale_server_url>
+      TAILSCALE_KEY: <AUTH_KEY>
+      TAILSCALE_SERVER_URL: <SERVER_URL}
+      TAILSCALE_HOSTNAME: <HOSTNAME}     
+    volumes:
+      - ./tailscale-client/:/tailscale/
+
 ```
 Then, start the container with:
-```
+```bash
 docker-compose up -d
 ```
-### Why is `/dev/net/tun` Necessary?
+### What is `/dev/net/tun` ?
 
 - **Tunnel Network Interface**: `/dev/net/tun` is a special device used to create tunnel-type network interfaces (TUN/TAP). These interfaces are often used for VPNs and other types of virtual networks.
 
@@ -53,3 +58,7 @@ docker-compose up -d
 - **Network Administration**: `NET_ADMIN` is a Linux capability that grants a process the ability to manage network configurations. This includes tasks such as setting up IP addresses, modifying routing tables, and managing network interfaces.
 
 - **Tailscale**: Tailscale requires `NET_ADMIN` to configure network interfaces and manage firewall rules needed for establishing VPN connections. Without this capability, Tailscale would be unable to perform necessary network operations for connecting to your Tailnet network.
+
+### Why is the Volume /tailscale/state Useful?
+
+The volume mounted at /tailscale/state is used to persist Tailscale’s state information across container restarts. This state includes crucial data such as authentication tokens and network configurations.
