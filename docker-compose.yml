@@ -1,0 +1,11 @@
+services:
+  tailscale:
+    image: tailscale-container
+    container_name: tailscale-container
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    environment:
+      - TAILSCALE_KEY=<your_auth_key>
+      - TAILSCALE_SERVER_URL=<your_tailscale_server_url>
