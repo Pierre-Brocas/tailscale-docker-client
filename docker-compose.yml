@@ -1,6 +1,6 @@
 services:
-  tailscale-docker-client:
-    image: tailscale-docker-client
+  headscale-docker-client:
+    image: ghcr.io/pierre-brocas/tailscale-docker-client:latest
     container_name: tailscale-docker-client
     cap_add:
       - NET_ADMIN
@@ -9,6 +9,13 @@ services:
     environment:
       TAILSCALE_KEY: <AUTH_KEY>
       TAILSCALE_SERVER_URL: <SERVER_URL}
-      TAILSCALE_HOSTNAME: <HOSTNAME}     
+      TAILSCALE_HOSTNAME: <HOSTNAME}   
     volumes:
       - ./tailscale-client/:/tailscale/
+  caddy:
+    image: caddy:latest
+    network_mode: container:tailscale-docker-client
+    depends_on:
+      headscale-docker-client:
+        condition: service_started
+    restart: unless-stopped
